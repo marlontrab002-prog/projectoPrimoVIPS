@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Primo VIPs · acceso</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="login-page">
+  <div class="login-bg" aria-hidden="true">
+    <div class="login-blob a"></div>
+    <div class="login-blob b"></div>
+  </div>
+
+  <main class="login-shell">
+    <header class="login-brand">
+      <div class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" width="40" height="40">
+          <circle cx="24" cy="24" r="22" fill="#000" stroke="#dc143c" stroke-width="2"/>
+          <path d="M14 18 L34 18 L30 24 L34 30 L14 30 L18 24 Z" fill="#dc143c"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-sub">DeadpoolCHK · admin</div>
+        <h1 class="logo-title">PROYECTO<br>PRIMO VIPS</h1>
+      </div>
+    </header>
+
+    <form class="login-form" id="loginForm" autocomplete="off">
+      <label class="field">
+        <span class="field-label">Clave de acceso</span>
+        <input type="password" name="password" id="password" required autofocus
+               placeholder="••••••••••••" minlength="4" autocomplete="current-password">
+      </label>
+      <button type="submit" class="btn-primary" id="submitBtn">
+        <span class="btn-label">Entrar</span>
+      </button>
+      <div class="login-error" id="loginError" role="alert" aria-live="polite"></div>
+    </form>
+
+    <footer class="login-foot">
+      <span>v1 · uso interno</span>
+      <span class="dot">●</span>
+      <span>sesión 8h</span>
+    </footer>
+  </main>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const errBox = document.getElementById('loginError');
+    const btn = document.getElementById('submitBtn');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errBox.textContent = '';
+      btn.disabled = true;
+      btn.querySelector('.btn-label').textContent = 'verificando…';
+      try {
+        const r = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: document.getElementById('password').value }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.error || `error ${r.status}`);
+        location.href = '/';
+      } catch (err) {
+        errBox.textContent = err.message || 'error desconocido';
+        btn.disabled = false;
+        btn.querySelector('.btn-label').textContent = 'Entrar';
+      }
+    });
+  </script>
+</body>
+</html>

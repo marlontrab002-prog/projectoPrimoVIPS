@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Primo VIPs · admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-brand">
+      <svg viewBox="0 0 48 48" width="30" height="30" aria-hidden="true">
+        <circle cx="24" cy="24" r="22" fill="currentColor" opacity="0.08"/>
+        <circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M14 18 L34 18 L30 24 L34 30 L14 30 L18 24 Z" fill="currentColor"/>
+      </svg>
+      <div>
+        <div class="brand-sub">DeadpoolCHK</div>
+        <div class="brand-name">PRIMO VIPS <span class="brand-tag">admin</span></div>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="chip" id="refreshBtn" title="Actualizar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg>
+        <span>actualizar</span>
+      </button>
+      <button class="chip" id="themeBtn" title="Tema">
+        <svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+        <span id="themeLabel">tema</span>
+      </button>
+      <button class="chip chip-logout" id="logoutBtn" title="Cerrar sesión">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        <span>salir</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="stats" id="stats">
+    <div class="stat">
+      <div class="stat-k">total users</div>
+      <div class="stat-v" id="stTotal">—</div>
+    </div>
+    <div class="stat stat-vip">
+      <div class="stat-k">VIP activos</div>
+      <div class="stat-v" id="stVipActive">—</div>
+    </div>
+    <div class="stat stat-expired">
+      <div class="stat-k">VIP vencidos</div>
+      <div class="stat-v" id="stVipExpired">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-k">free</div>
+      <div class="stat-v" id="stFree">—</div>
+    </div>
+    <div class="stat stat-wide">
+      <div class="stat-k">Σ credits · creditsms · charged</div>
+      <div class="stat-v mono small"><span id="stSumC">—</span> · <span id="stSumSms">—</span> · <span id="stSumCh">—</span></div>
+    </div>
+  </section>
+
+  <section class="toolbar">
+    <div class="field-group search-group">
+      <input type="search" id="qSearch" placeholder="Buscar por id, username, email, telegram…" autocomplete="off">
+      <button class="btn-ghost" id="qClear" title="Limpiar">×</button>
+    </div>
+
+    <div class="chip-row" role="tablist" aria-label="Filtro de estado">
+      <button class="pill" data-status="all" aria-pressed="true">Todos</button>
+      <button class="pill" data-status="vip_active" aria-pressed="false">VIP activos</button>
+      <button class="pill" data-status="vip_expired" aria-pressed="false">VIP vencidos</button>
+      <button class="pill" data-status="free" aria-pressed="false">Free</button>
+    </div>
+
+    <details class="filter-adv">
+      <summary><span>Filtros avanzados</span></summary>
+      <div class="filter-grid">
+        <label>min credits <input type="number" id="minCredits" min="0" step="1" placeholder="0"></label>
+        <label>max credits <input type="number" id="maxCredits" min="0" step="1" placeholder="∞"></label>
+        <label>min cookies (sms) <input type="number" id="minSms" min="0" step="0.001" placeholder="0"></label>
+        <label>max cookies (sms) <input type="number" id="maxSms" min="0" step="0.001" placeholder="∞"></label>
+      </div>
+      <div class="filter-adv-actions">
+        <button class="btn-ghost" id="filterReset">reset</button>
+        <button class="btn-primary small" id="filterApply">aplicar</button>
+      </div>
+    </details>
+
+    <div class="sort-group">
+      <label class="sort-label">
+        <span>orden</span>
+        <select id="sortBy">
+          <option value="id">id</option>
+          <option value="username">username</option>
+          <option value="expiry">expiry</option>
+          <option value="credits">credits</option>
+          <option value="creditsms">creditsms (cookies)</option>
+          <option value="charged">charged</option>
+          <option value="createdAt">registro</option>
+          <option value="updatedAt">última mod</option>
+        </select>
+      </label>
+      <button class="dir-btn" id="sortDir" data-dir="desc" title="Dirección">↓</button>
+      <label class="sort-label">
+        <span>por página</span>
+        <select id="pageLimit">
+          <option>25</option>
+          <option selected>50</option>
+          <option>100</option>
+          <option>200</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <section class="results">
+    <div class="results-meta">
+      <span id="resultsCount">cargando…</span>
+      <span id="resultsPage" class="mono"></span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="users" id="usersTable">
+        <thead>
+          <tr>
+            <th class="col-id">id</th>
+            <th>username</th>
+            <th class="col-tg">telegram</th>
+            <th class="col-vip">vip</th>
+            <th class="col-expiry">expiry</th>
+            <th class="col-num">credits</th>
+            <th class="col-num">cookies</th>
+            <th class="col-num">charged</th>
+            <th class="col-actions"></th>
+          </tr>
+        </thead>
+        <tbody id="usersBody">
+          <tr><td colspan="9" class="empty">cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <button class="btn-ghost" id="pgFirst">« primera</button>
+      <button class="btn-ghost" id="pgPrev">‹ anterior</button>
+      <span class="pg-info"><span id="pgCur">1</span> / <span id="pgTotal">1</span></span>
+      <button class="btn-ghost" id="pgNext">siguiente ›</button>
+      <button class="btn-ghost" id="pgLast">última »</button>
+    </div>
+  </section>
+
+  <!-- Modal edición -->
+  <dialog class="edit-modal" id="editModal">
+    <form method="dialog" id="editForm">
+      <header class="modal-head">
+        <div>
+          <div class="modal-sub">editando user</div>
+          <h2 id="modalTitle">—</h2>
+          <div class="modal-tg mono" id="modalMeta">—</div>
+        </div>
+        <button type="button" class="modal-close" id="modalClose" aria-label="Cerrar">×</button>
+      </header>
+
+      <div class="modal-body">
+        <div class="row-grid">
+          <label class="field">
+            <span class="field-label">isVip</span>
+            <div class="switch-wrap">
+              <input type="checkbox" id="fIsVip" class="switch">
+              <span class="switch-label">
+                <span class="on">VIP</span>
+                <span class="off">FREE</span>
+              </span>
+            </div>
+          </label>
+          <label class="field">
+            <span class="field-label">expiry (fecha + hora)</span>
+            <input type="datetime-local" id="fExpiry" step="1">
+            <button type="button" class="btn-tiny" id="fExpiryClear">× null</button>
+          </label>
+        </div>
+        <div class="row-grid">
+          <label class="field">
+            <span class="field-label">credits <small>int</small></span>
+            <input type="number" id="fCredits" min="0" step="1">
+          </label>
+          <label class="field">
+            <span class="field-label">creditsms (cookies) <small>decimal</small></span>
+            <input type="number" id="fCreditsms" min="0" step="0.001">
+          </label>
+          <label class="field">
+            <span class="field-label">charged <small>int</small></span>
+            <input type="number" id="fCharged" min="0" step="1">
+          </label>
+        </div>
+
+        <div class="before-after" id="beforeAfter"></div>
+      </div>
+
+      <footer class="modal-foot">
+        <div class="modal-err" id="modalErr" role="alert"></div>
+        <button type="button" class="btn-ghost" id="modalCancel">Cancelar</button>
+        <button type="submit" class="btn-primary" id="modalSave">Guardar cambios</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
