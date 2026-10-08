@@ -575,9 +575,6 @@ table.users th {
   background: var(--surface-raised);
   border-bottom: 1px solid var(--border);
   font-weight: 600;
-  position: sticky;
-  top: 60px;
-  z-index: 2;
 }
 table.users td {
   padding: 10px 14px;
