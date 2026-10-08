@@ -17,8 +17,21 @@ const state = {
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fmtNum = (n) => (Number(n) || 0).toLocaleString('es-AR', { maximumFractionDigits: 3 });
+// fmtNum: si es entero muestra sin decimales (10 en vez de 10.000); si tiene decimales, los muestra (10,675)
+const fmtNum = (n) => {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return '0';
+  return Number.isInteger(v)
+    ? v.toLocaleString('es-AR')
+    : v.toLocaleString('es-AR', { maximumFractionDigits: 3 });
+};
 const fmtInt = (n) => (parseInt(n) || 0).toLocaleString('es-AR');
+// stripNum: para inputs — 20.000 → "20", 20.500 → "20.5"
+const stripNum = (n) => {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return '0';
+  return Number.isInteger(v) ? String(v) : String(parseFloat(v.toFixed(3)));
+};
 const fmtDate = (iso) => {
   if (!iso) return '—';
   const d = new Date(iso);
@@ -253,9 +266,8 @@ async function openEditModal(id) {
     $('#modalMeta').textContent = `#${u.id} · ${u.email || '—'} · tg: ${u.telegramUsername || '—'}`;
     $('#fIsVip').checked = !!u.isVip;
     $('#fExpiry').value = u.expiry ? toLocalInput(u.expiry) : '';
-    $('#fCredits').value = u.credits ?? 0;
-    $('#fCreditsms').value = u.creditsms ?? 0;
-    $('#fCharged').value = u.charged ?? 0;
+    $('#fCreditsms').value = stripNum(u.creditsms ?? 0);
+    $('#fCharged').value = String(parseInt(u.charged) || 0);
     updateDiff();
   } catch (e) {
     err.textContent = 'error cargando: ' + e.message;
@@ -277,7 +289,7 @@ $('#modalCancel').addEventListener('click', closeEditModal);
 $('#modalClose').addEventListener('click', closeEditModal);
 $('#fExpiryClear').addEventListener('click', () => { $('#fExpiry').value = ''; updateDiff(); });
 
-['fIsVip','fExpiry','fCredits','fCreditsms','fCharged'].forEach(id => {
+['fIsVip','fExpiry','fCreditsms','fCharged'].forEach(id => {
   $('#' + id).addEventListener('input', updateDiff);
   $('#' + id).addEventListener('change', updateDiff);
 });
@@ -290,29 +302,49 @@ function diffPayload() {
   const curExp = currentUser.expiry ? toLocalInput(currentUser.expiry) : '';
   const newExp = $('#fExpiry').value;
   if (newExp !== curExp) payload.expiry = newExp || null;
-  const nCredits = parseInt($('#fCredits').value);
-  if (!Number.isNaN(nCredits) && nCredits !== (parseInt(currentUser.credits) || 0)) payload.credits = nCredits;
   const nSms = Number($('#fCreditsms').value);
   if (!Number.isNaN(nSms) && nSms !== Number(currentUser.creditsms || 0)) payload.creditsms = nSms;
   const nCh = parseInt($('#fCharged').value);
   if (!Number.isNaN(nCh) && nCh !== (parseInt(currentUser.charged) || 0)) payload.charged = nCh;
   return payload;
 }
+
+const DIFF_ICONS = { isVip: '👑', expiry: '📅', creditsms: '🍪', charged: '💳' };
+const DIFF_LABELS = { isVip: 'isVip', expiry: 'expiry', creditsms: 'creditsms (cookies)', charged: 'charged' };
+
 function updateDiff() {
   const payload = diffPayload();
   const el = $('#beforeAfter');
   if (!currentUser) { el.textContent = ''; return; }
   const keys = Object.keys(payload);
-  if (keys.length === 0) { el.innerHTML = '<em style="color:var(--text-subtle)">(sin cambios aún)</em>'; return; }
-  el.innerHTML = 'cambios: ' + keys.map(k => {
-    const oldv = k === 'expiry'
-      ? (currentUser.expiry ? fmtDate(currentUser.expiry) : 'null')
-      : String(currentUser[k] ?? '');
-    const newv = k === 'expiry'
-      ? (payload.expiry ? fmtDate(payload.expiry) : 'null')
-      : String(payload[k]);
-    return `<span class="diff-field">${k}</span>: <span class="diff-old">${esc(oldv)}</span> → <span class="diff-new">${esc(newv)}</span>`;
-  }).join(' · ');
+  if (keys.length === 0) {
+    el.innerHTML = '<em style="color:var(--text-subtle)">(sin cambios aún — editá algún campo para ver el diff)</em>';
+    return;
+  }
+  const rows = keys.map(k => {
+    let oldv, newv;
+    if (k === 'expiry') {
+      oldv = currentUser.expiry ? fmtDate(currentUser.expiry) : 'null';
+      newv = payload.expiry ? fmtDate(payload.expiry) : 'null';
+    } else if (k === 'isVip') {
+      oldv = currentUser.isVip ? 'VIP' : 'FREE';
+      newv = payload.isVip ? 'VIP' : 'FREE';
+    } else if (k === 'creditsms') {
+      oldv = fmtNum(currentUser.creditsms);
+      newv = fmtNum(payload.creditsms);
+    } else {
+      oldv = fmtInt(currentUser[k]);
+      newv = fmtInt(payload[k]);
+    }
+    return `<div class="diff-row">
+      <span class="diff-icon">${DIFF_ICONS[k] || '•'}</span>
+      <span class="diff-field">${DIFF_LABELS[k] || k}</span>
+      <span class="diff-old">${esc(oldv)}</span>
+      <span class="diff-arrow">→</span>
+      <span class="diff-new">${esc(newv)}</span>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div class="diff-title">cambios pendientes · ${keys.length}</div>${rows}`;
 }
 
 $('#editForm').addEventListener('submit', async (e) => {

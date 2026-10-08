@@ -755,20 +755,39 @@ table.users tbody tr:hover { background: var(--surface-raised); }
 
 .before-after {
   margin-top: 20px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   background: var(--surface-sunken);
   border: 1px dashed var(--border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--text-muted);
   min-height: 20px;
-  white-space: pre-wrap;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 .before-after:empty { display: none; }
-.before-after .diff-field { color: var(--accent); font-weight: 600; }
-.before-after .diff-old { color: var(--text-subtle); text-decoration: line-through; }
-.before-after .diff-new { color: var(--success); font-weight: 600; }
+.diff-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+  margin-bottom: 2px;
+}
+.diff-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 4px 0;
+}
+.diff-icon { font-size: 14px; line-height: 1; }
+.diff-field { color: var(--accent); font-weight: 600; min-width: 100px; }
+.diff-old { color: var(--text-subtle); text-decoration: line-through; }
+.diff-arrow { color: var(--text-subtle); font-weight: 500; }
+.diff-new { color: var(--success); font-weight: 700; }
 
 .modal-foot {
   padding: 14px 24px;
